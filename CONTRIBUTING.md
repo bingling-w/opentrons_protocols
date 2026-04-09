@@ -22,7 +22,8 @@ Each protocol folder should include:
 - Input files (e.g., `.xlsx`), if needed
 - Custom labware (if specific to that protocol)
 
-**Robotics Colony Members:**  
+**Robotics Colony Members:**
+
 Place shared/assigned work in `protocols/OT-Flex/ColonyPlayground/` and prefix folders with your BU username (e.g., `jsmith_supernatant_removal`).  
 Individual protocols should go directly in `protocols/OT-Flex/`.
 
