@@ -89,7 +89,7 @@ def run(protocol: protocol_api.ProtocolContext):
     else:
         channel8_amount = 24
     total_reagent = round(((standards_number + channel8_amount) * replicates_number * volume_reagent_per_sample) * 1.20)
-    protocol.comment('Total Reagent needed: {total_reagent}')
+    protocol.comment(f'Total Reagent needed: {total_reagent}')
 
     # Load liquids into labware
     reservoir['A1'].load_liquid(liquid=reagent_a, volume=15000)
@@ -152,7 +152,7 @@ def run(protocol: protocol_api.ProtocolContext):
             destination_well = temp_plate.columns()[dest_column][row_in_column]
             all_destinations.append(destination_well)
 
-        protocol.comment(f'Transferring unknown {source_idx + 1} to {replicates_number} replicates')
+        protocol.comment(f'Transferring unknown {source_idx + 1}')
 
         p1000_single.pick_up_tip()
         p1000_single.mix(2, 100, source)  # Mix at source before aspirating
@@ -238,7 +238,7 @@ def run(protocol: protocol_api.ProtocolContext):
     # ===== STEP 6: Shake =====
     protocol.comment("Shaking at 900 rpm")
     heater_shaker.set_and_wait_for_shake_speed(900)  # Set to 900 rpm and wait
-    protocol.delay(seconds=20)  # Shake for 20 seconds
+    protocol.delay(seconds=10)  # Shake for 20 seconds
 
     # Stop shaking
     heater_shaker.deactivate_shaker()
@@ -246,8 +246,9 @@ def run(protocol: protocol_api.ProtocolContext):
     # Open heater shaker latch
     heater_shaker.open_labware_latch()
 
-    protocol.comment('Incubating at room temperature for 4 minutes and 10 seconds')
-    protocol.delay(seconds=250)
+    delay_time = (260 - ((10 * (replicates_number - 1) + (10 * columns_per_replicate * replicates_number))))
+    protocol.comment(f'Incubating at room temperature for {delay_time}')
+    protocol.delay(seconds=delay_time)
 
-    protocol.comment('BCA Protein Assay protocol complete, please send wellplate to platereader immediately, 480nm')
+    protocol.comment('BCA Protein Assay protocol complete, please send wellplate to platereader immediately at 480nm')
 
