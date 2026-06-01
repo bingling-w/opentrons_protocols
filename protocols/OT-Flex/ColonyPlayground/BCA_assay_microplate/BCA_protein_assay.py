@@ -4,7 +4,7 @@ from opentrons import protocol_api
 standards_number = 8
 unknown_number = 4
 # Note this code can accept up to 23 unknowns and up to 1 to 2 replicates
-# or accpet up to 18 unknowns and 3 replicates
+# or accept up to 18 unknowns and 3 replicates
 replicates_number = 1  # Supports up to 3 replicates depending on number of unknowns
 volume_reagent_per_sample = 200  # uL
 
