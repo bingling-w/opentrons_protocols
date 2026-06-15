@@ -185,6 +185,10 @@ def run(protocol: protocol_api.ProtocolContext):
         pip_single.dispense(reagent_b_ul / 7, position)
     pip_single.blow_out(reagent_reservoir['A2'].bottom(15))
 
+
+    pip_multi.flow_rate.aspirate = 150
+    pip_multi.flow_rate.dispense = 150
+
     # Slow speed to decrease bubbles in working reagent while mixing and populating wellplate
     for i in range(2,5,2):
         pip_multi.mix(3, min(expected_WR / 9, 1000), reagent_reservoir['A2'].bottom(i - .7))
