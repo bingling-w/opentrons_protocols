@@ -1,1 +1,265 @@
+from opentrons import protocol_api
+from opentrons.types import Point
 
+from opentrons.protocol_api import PARTIAL_COLUMN, ALL 
+
+
+metadata = {
+    'protocolName': 'Pierce Dilution-Free Rapid Gold BCA Protein Assay',
+    'author': 'OpentronsAI',
+    'description': 'BCA protein assay with serial dilution of BSA standards and unknown samples',
+    'source': 'OpentronsAI'
+}
+
+requirements = {
+    'robotType': 'Flex',
+    'apiLevel': '2.28'
+}
+
+def run(protocol: protocol_api.ProtocolContext):
+    # Load trash bin
+    trash = protocol.load_trash_bin('A3')
+    
+    # Load modules
+    tc_mod = protocol.load_module('thermocyclerModuleV2')  # A1+B1 (default)
+    temp_mod = protocol.load_module('temperature module gen2', 'C3')
+    hs_mod = protocol.load_module('heaterShakerModuleV1', 'C1')  # Heater-shaker in C1
+    hs_adapter = hs_mod.load_adapter('opentrons_universal_flat_adapter')  # Adapter for 96-well plate on heater-shaker
+    
+    # Load labware
+    # Assay plate on heater-shaker
+    assay_plate = hs_adapter.load_labware('nunc_96_wellplate_optical_bottom_400ul')
+    
+    # BSA standards in tube rack 1
+    tube_rack_1 = protocol.load_labware('opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap', 'D2')
+    
+    # Unknown samples in tube rack 2
+    tube_rack_2 = protocol.load_labware('opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap', 'C2')
+
+    # Reservoir for reagents
+    reservoir = protocol.load_labware('usascientific_12_reservoir_22ml', 'D1')
+    
+    # Tip racks
+    tiprack_1 = protocol.load_labware('opentrons_flex_96_tiprack_1000ul', 'D3')
+    tiprack_2 = protocol.load_labware('opentrons_flex_96_tiprack_1000ul', 'B3')
+    tiprack_3 = protocol.load_labware('opentrons_flex_96_tiprack_200ul', 'B2')
+
+   # tiprack_3 = protocol.load_labware('opentrons_flex_96_tiprack_200ul', 'C2')
+    # ==========================
+    # USER-DEFINED PARAMETERS
+    # ==========================
+
+    NUM_STANDARDS = 8
+    NUM_UNKNOWNS = 4
+    replicates = 1
+
+    SAMPLE_VOLUME = 10      # µL
+    WORKING_REAGENT_VOLUME = 200  # µL per well
+
+    WR_needed = (NUM_STANDARDS + NUM_UNKNOWNS) * WORKING_REAGENT_VOLUME * replicates
+    WR_needed_with_overage = WR_needed + 300
+  
+
+    # Pierce Rapid Gold BCA Working Reagent ratio
+    # 50 parts Reagent A : 1 part Reagent B
+
+    REAGENT_A_VOLUME =  WR_needed_with_overage * (50 / 51)  # Reagent A is 50 parts of total
+
+    REAGENT_B_VOLUME = WR_needed_with_overage * (1 / 51)   # Reagent B is 1 part of total
+
+    
+
+    
+    # Load pipettes
+    left_pipette = protocol.load_instrument(
+        'flex_8channel_1000',
+        mount='left',
+        tip_racks=[tiprack_1]
+    )
+    
+    right_pipette = protocol.load_instrument(
+        'flex_1channel_1000',
+        mount='right',
+        tip_racks=[tiprack_2, tiprack_3]
+    )
+    right_pipette.default_speed = 750
+    right_pipette.flow_rate.aspirate = 450
+    right_pipette.flow_rate.dispense = 450
+
+    left_pipette.default_speed = 750
+    left_pipette.flow_rate.aspirate = 450
+    left_pipette.flow_rate.dispense = 450
+    
+    # Define liquids
+    reagent_a = protocol.define_liquid(
+        name='Reagent A',
+        description='BCA Reagent A',
+        display_color='#00FF00'
+    )
+    
+    reagent_b = protocol.define_liquid(
+        name='Reagent B',
+        description='BCA Reagent B',
+        display_color='#0000FF'
+    )
+    
+    bsa_standard = protocol.define_liquid(
+        name='BSA Standard',
+        description='BSA protein standards',
+        display_color='#FF0000'
+    )
+    
+    unknown_sample = protocol.define_liquid(
+        name='Unknown Sample',
+        description='Unknown protein samples',
+        display_color='#FFA500'
+    )
+    
+    # Load liquids into labware
+    reservoir['A1'].load_liquid(liquid=reagent_a, volume=REAGENT_A_VOLUME)
+    
+    # Reagent B in tube rack 1 - last row (D6 position)
+    tube_rack_1['D6'].load_liquid(liquid=reagent_b, volume=REAGENT_B_VOLUME)
+    
+    # BSA standards in tube rack 1 (first 8 tubes)
+    for i in range(8):
+        tube_rack_1.wells()[i].load_liquid(liquid=bsa_standard, volume=100)
+    
+    # Unknown samples in tube rack 2 (first 4 tubes)
+    for i in range(4):
+        tube_rack_2.wells()[i].load_liquid(liquid=unknown_sample, volume=100)
+    
+    # Protocol steps
+    
+    # Open heater-shaker latch
+    hs_mod.open_labware_latch()
+    protocol.comment('Please ensure plate is properly seated on heater-shaker')
+    hs_mod.close_labware_latch()
+    
+    # Prepare Working Reagent using 8-channel pipette
+    protocol.comment('Preparing Working Reagent in reservoir well A2')
+    
+    # Transfer Reagent A (5000 µL total)
+    # Each of the 8 channels transfers 625 µL
+    # # Total volume transferred = 8 × 625 µL = 5000 µL
+    
+    
+        # ===== PROCESS BSA STANDARDS (Column 1) =====
+    protocol.comment('Processing BSA standards in column 1')
+
+        # Transfer BSA standards from tube rack 1 to assay plate column 1
+    protocol.comment('Transferring BSA standards to assay plate column 1')
+    
+    # Transfer from first 8 tubes to wells A1-H1
+    for i in range(8):
+        right_pipette.pick_up_tip(tiprack_3)  # Use 200 µL tips for standards
+        right_pipette.aspirate(SAMPLE_VOLUME, tube_rack_1.wells()[i])
+        right_pipette.dispense(SAMPLE_VOLUME, assay_plate.wells()[i])
+        right_pipette.blow_out(assay_plate.wells()[i])
+        right_pipette.drop_tip()
+
+    # ===== PROCESS UNKNOWN SAMPLES (Column 2) =====
+    protocol.comment('Processing unknown samples in column 2')
+    
+    # Transfer unknown samples from tube rack 2 to assay plate column 2
+    protocol.comment('Transferring unknown samples to assay plate column 2')
+    
+    # Transfer from first 4 tubes to wells A2-H2
+    for i in range(4):
+        right_pipette.pick_up_tip(tiprack_3)
+        right_pipette.aspirate(SAMPLE_VOLUME, tube_rack_2.wells()[i])
+        right_pipette.dispense(SAMPLE_VOLUME, assay_plate.wells()[i + 8])
+        right_pipette.blow_out(assay_plate.wells()[i+8])
+        right_pipette.drop_tip()
+
+    # Mix Working Reagent using 8-channel pipette
+    left_pipette.pick_up_tip()
+    left_pipette.transfer( 
+            REAGENT_A_VOLUME/8,
+            reservoir['A1'],
+            reservoir['A2'],
+            new_tip='never'
+    )
+
+
+    res = reservoir['A2'].bottom(3)
+    reservoir_positions = [res.move(Point(y = 10 * i)) for i in range(-3,4)]
+
+
+    right_pipette.pick_up_tip()
+    right_pipette.aspirate(REAGENT_B_VOLUME, tube_rack_1['D6'])
+    for location in reservoir_positions:
+        right_pipette.dispense(REAGENT_B_VOLUME / 7, location)
+    right_pipette.blow_out(reservoir['A2'].top(-5))
+    right_pipette.drop_tip()
+    
+
+    protocol.comment('Mixing Working Reagent with 8-channel pipette')
+    for i in range(2,5,2):
+        left_pipette.mix(3, min(WR_needed_with_overage/10, 1000), reservoir['A2'].bottom(i -.5))
+       
+    left_pipette.blow_out(reservoir['A2'])
+    left_pipette.drop_tip()
+    
+    # Add Working Reagent to BSA standard wells
+    protocol.comment('Adding Working Reagent to BSA standard wells')
+
+# ---- ALL 8 CHANNELS ----
+    left_pipette.configure_nozzle_layout(
+    style=ALL,
+    start='A1',
+    tip_racks=[tiprack_1]
+)
+
+    left_pipette.pick_up_tip()
+    left_pipette.aspirate( WORKING_REAGENT_VOLUME, reservoir['A2'])
+    left_pipette.dispense(WORKING_REAGENT_VOLUME, assay_plate['A1'].top(-2))
+    left_pipette.blow_out( assay_plate['A1'].top(-2))
+    left_pipette.touch_tip(v_offset=-2)
+    left_pipette.drop_tip()
+
+
+    protocol.comment("Adding Working Reagent (WR) to unknowns")
+
+# ---- PARTIAL COLUMN (4 TIPS) ----
+    left_pipette.configure_nozzle_layout(
+    style=PARTIAL_COLUMN,
+    start='H1',
+    end='E1',
+    tip_racks=[tiprack_1]
+)
+
+    left_pipette.pick_up_tip()
+
+    left_pipette.aspirate(WORKING_REAGENT_VOLUME,reservoir['A2'])
+
+# H,G,F,E channels align with D,C,B,A of column 2
+    left_pipette.dispense(WORKING_REAGENT_VOLUME, assay_plate['D2'].top(-2))
+
+    left_pipette.blow_out(
+    assay_plate['D2'].top(-2)
+)
+
+    left_pipette.touch_tip(v_offset=-2)
+
+    left_pipette.drop_tip()
+
+    # Mix samples using heater-shaker
+    protocol.comment('Mixing all samples using heater-shaker')
+    
+    # Shake at moderate speed for mixing
+    hs_mod.set_and_wait_for_shake_speed(rpm=1000)
+    protocol.delay(seconds=30)  # Shake for 30 seconds
+    hs_mod.deactivate_shaker()
+    
+    # Incubate for 5 minutes at room temperature
+    protocol.comment('Incubating for 3 minutes at room temperature')
+    protocol.delay(minutes=3)
+    
+    # Protocol complete - ready for absorbance reading
+    hs_mod.open_labware_latch()
+    protocol.comment('Protocol complete. Plate ready for absorbance reading at 480 nm.')
+    protocol.comment('Column 1 (A1-H1): BSA standards')
+    protocol.comment('Column 2 (A2-H2): Unknown samples')
+    protocol.comment('Note: Working Reagent must be used within 1.5 hours of preparation.')
+    protocol.comment('Remove plate from heater-shaker and read absorbance using external plate reader.')
