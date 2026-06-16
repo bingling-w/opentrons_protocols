@@ -57,7 +57,7 @@ def run(protocol: protocol_api.ProtocolContext):
     WORKING_REAGENT_VOLUME = 200  # µL per well
 
     WR_needed = (NUM_STANDARDS + NUM_UNKNOWNS) * WORKING_REAGENT_VOLUME * replicates
-    WR_needed_with_overage = WR_needed + 300
+    WR_needed_with_overage = WR_needed + 400
   
 
     # Pierce Rapid Gold BCA Working Reagent ratio
@@ -76,7 +76,13 @@ def run(protocol: protocol_api.ProtocolContext):
         mount='left',
         tip_racks=[tiprack_1]
     )
-    
+    # ---- ALL 8 CHANNELS ----
+    left_pipette.configure_nozzle_layout(
+    style=ALL,
+    start='A1',
+    tip_racks=[tiprack_1]
+)
+
     right_pipette = protocol.load_instrument(
         'flex_1channel_1000',
         mount='right',
@@ -139,10 +145,7 @@ def run(protocol: protocol_api.ProtocolContext):
     # Prepare Working Reagent using 8-channel pipette
     protocol.comment('Preparing Working Reagent in reservoir well A2')
     
-    # Transfer Reagent A (5000 µL total)
-    # Each of the 8 channels transfers 625 µL
-    # # Total volume transferred = 8 × 625 µL = 5000 µL
-    
+
     
         # ===== PROCESS BSA STANDARDS (Column 1) =====
     protocol.comment('Processing BSA standards in column 1')
@@ -172,7 +175,7 @@ def run(protocol: protocol_api.ProtocolContext):
         right_pipette.blow_out(assay_plate.wells()[i+8])
         right_pipette.drop_tip()
 
-    # Mix Working Reagent using 8-channel pipette
+    # # Transfer Reagent A (3300)
     left_pipette.pick_up_tip()
     left_pipette.transfer( 
             REAGENT_A_VOLUME/8,
@@ -181,11 +184,13 @@ def run(protocol: protocol_api.ProtocolContext):
             new_tip='never'
     )
 
+    left_pipette.blow_out(reservoir['A2'].top(-5))
+
 
     res = reservoir['A2'].bottom(3)
     reservoir_positions = [res.move(Point(y = 10 * i)) for i in range(-3,4)]
 
-
+# Transferring reagent B
     right_pipette.pick_up_tip()
     right_pipette.aspirate(REAGENT_B_VOLUME, tube_rack_1['D6'])
     for location in reservoir_positions:
@@ -193,29 +198,31 @@ def run(protocol: protocol_api.ProtocolContext):
     right_pipette.blow_out(reservoir['A2'].top(-5))
     right_pipette.drop_tip()
     
-
+# MIXING
     protocol.comment('Mixing Working Reagent with 8-channel pipette')
     for i in range(2,5,2):
         left_pipette.mix(3, min(WR_needed_with_overage/10, 1000), reservoir['A2'].bottom(i -.5))
        
     left_pipette.blow_out(reservoir['A2'])
-    left_pipette.drop_tip()
+     
+    #Slow speed
+    left_pipette.flow_rate.aspirate = 75
+    left_pipette.flow_rate.dispense = 75
+    right_pipette.flow_rate.aspirate = 75
+    right_pipette.flow_rate.dispense = 75
     
     # Add Working Reagent to BSA standard wells
     protocol.comment('Adding Working Reagent to BSA standard wells')
 
-# ---- ALL 8 CHANNELS ----
-    left_pipette.configure_nozzle_layout(
-    style=ALL,
-    start='A1',
-    tip_racks=[tiprack_1]
-)
 
-    left_pipette.pick_up_tip()
-    left_pipette.aspirate( WORKING_REAGENT_VOLUME, reservoir['A2'])
+    left_pipette.aspirate( WORKING_REAGENT_VOLUME, reservoir['A2'].bottom(1))
     left_pipette.dispense(WORKING_REAGENT_VOLUME, assay_plate['A1'].top(-2))
     left_pipette.blow_out( assay_plate['A1'].top(-2))
-    left_pipette.touch_tip(v_offset=-2)
+    left_pipette.touch_tip(
+        radius=0.7,
+        v_offset=-1,
+        speed=15
+        )
     left_pipette.drop_tip()
 
 
@@ -228,19 +235,33 @@ def run(protocol: protocol_api.ProtocolContext):
     end='E1',
     tip_racks=[tiprack_1]
 )
+    def partial_wr_aspirate(pipette, volume, reservoir):
+        positions = [-20, 20]
+        
+        for y in positions:
+            pipette.move_to(reservoir.top(10))
+            
+            pipette.aspirate(
+                volume / 2,
+                reservoir.bottom(0.5).move(Point(y=y))
+        )
+            protocol.delay(seconds=0.5)
+    
+    left_pipette.pick_up_tip() 
 
-    left_pipette.pick_up_tip()
-
-    left_pipette.aspirate(WORKING_REAGENT_VOLUME,reservoir['A2'])
-
-# H,G,F,E channels align with D,C,B,A of column 2
-    left_pipette.dispense(WORKING_REAGENT_VOLUME, assay_plate['D2'].top(-2))
-
-    left_pipette.blow_out(
-    assay_plate['D2'].top(-2)
+    partial_wr_aspirate(
+        left_pipette,
+        WORKING_REAGENT_VOLUME,
+        reservoir['A2']
 )
 
-    left_pipette.touch_tip(v_offset=-2)
+    left_pipette.dispense(
+          WORKING_REAGENT_VOLUME, assay_plate['D2'].top(-2))
+
+    left_pipette.blow_out(assay_plate['D2'].top(-2))
+
+    left_pipette.touch_tip(radius=0.7, v_offset=-1, speed=15
+)
 
     left_pipette.drop_tip()
 
