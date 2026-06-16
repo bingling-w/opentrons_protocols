@@ -155,7 +155,8 @@ def run(protocol: protocol_api.ProtocolContext):
     
     # Transfer from first 8 tubes to wells A1-H1
     for i in range(8):
-        right_pipette.pick_up_tip(tiprack_3)  # Use 200 µL tips for standards
+        right_pipette.pick_up_tip(tiprack_3)
+        right_pipette.mix(3,50,tube_rack_1.wells()[i].bottom(2))
         right_pipette.aspirate(SAMPLE_VOLUME, tube_rack_1.wells()[i])
         right_pipette.dispense(SAMPLE_VOLUME, assay_plate.wells()[i])
         right_pipette.blow_out(assay_plate.wells()[i])
@@ -170,6 +171,7 @@ def run(protocol: protocol_api.ProtocolContext):
     # Transfer from first 4 tubes to wells A2-H2
     for i in range(4):
         right_pipette.pick_up_tip(tiprack_3)
+        right_pipette.mix(3,50,tube_rack_2.wells()[i].bottom(2))
         right_pipette.aspirate(SAMPLE_VOLUME, tube_rack_2.wells()[i])
         right_pipette.dispense(SAMPLE_VOLUME, assay_plate.wells()[i + 8])
         right_pipette.blow_out(assay_plate.wells()[i+8])
@@ -239,7 +241,7 @@ def run(protocol: protocol_api.ProtocolContext):
         positions = [-20, 20]
         
         for y in positions:
-            pipette.move_to(reservoir.top(10))
+            pipette.move_to(reservoir.bottom(7))
             
             pipette.aspirate(
                 volume / 2,
