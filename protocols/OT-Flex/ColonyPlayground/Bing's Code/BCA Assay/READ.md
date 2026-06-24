@@ -31,3 +31,13 @@ Or accept up to 18 unknowns of 3 replicates.
 This protocol requires the following custom labware:
 
 custom_labware/nunc_96_wellplate_optical_bottom_400ul.json
+
+## Protocol Updates
+- Ver. 9: Code is made to blow out, touch tip, and blow out again to account for viscousity of unknowns and standards to prevent droplets. 
+- Ver. 8: Code is optimized to dispense and aspirate slower for more accurate 
+- Ver. 7: Code is optimized to use small volume pipette arms and tips to minimize % error of the machine.
+- Ver. 6: Code is optimized to use partial nozzle set up for the 8-channel pipette when there is not a full column to reduce WR and tip waste.
+- Ver. 5: Code is made so pipette goes to the very bottom of the reservoir to reduce dead volume. 
+- Ver. 4: Code is optimized to distribute reagent B uniformly across the reservoir, and mixed with reagent A at different heights for a more uniform mixture. 
+- Ver. 2: Code contains mixing and blow out steps, though does not mix as well because the tip can mix max 50 uL volumes. 
+- Ver. 1: Code is optimized for flexibility for user to change the protocol base on how many replicates and unknowns is neccessary.
