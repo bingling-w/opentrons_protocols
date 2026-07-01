@@ -17,5 +17,9 @@ Two duplicates of BSA dilutions are created.
 *  Tube spot B1-B3 will hold the second set of BSA dilution. 
 *  Tube spot A6 and B6 will hold the blanks.
 
+## Protocol Validation
+- Water test: Testing with water and 10% glycerol with water coloring to validate even mixing.
+- BSA dilution test: Measure BSA concentration through BCA assay. 
+
 ## Protocol Updates
 - Ver. 1: Code is updated with mixing at different heights
