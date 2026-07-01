@@ -16,3 +16,6 @@ Two duplicates of BSA dilutions are created.
 *  Tube spot A1-A3 will hold the first set of BSA dilution.
 *  Tube spot B1-B3 will hold the second set of BSA dilution. 
 *  Tube spot A6 and B6 will hold the blanks.
+
+## Protocol Updates
+- Ver. 1: Code is updated with mixing at different heights
