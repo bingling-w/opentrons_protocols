@@ -5,6 +5,9 @@ This protocol performs automated Pierce Gold BCA assay kit from a 96 well plate 
 
 The code can accept up to 24 unknowns for 1 to 2 replicates or accept up to 18 unknowns for 3 replicates.
 
+<details>
+<summary>Click here for Pierce Gold BCA Assay Kit Information</summary>
+
 The Pierce Gold BCA Assay kit itself is for quantification of proteins in an unknown sample. The kit provides 8 standards with known protein concentrations. The unknowns and standards will be mixed with a working reagent (made by mixing reagent A and reagent B), left to incubate for 5 minutes at room temperature, and read in a spectrometry. 
 
 <img width="1160" height="218" alt="image" src="https://github.com/user-attachments/assets/3210d5fc-5c4c-431f-bfea-8e2b65adba7d" />
@@ -16,6 +19,8 @@ This is the samples absorbance reading. The standard readings in row 1 will be t
 The quadratic equation y = 0.246x + 0.0249 (y = absorbance) would be used to calculate the unknown protein concentrations in row 2 (x = concentration (mg/mL))
 
 For example, an absorbance of 1.426 means has a protein concentation of 5.696 mg/mL (x = ( y - 0.0249 ) / 0.246)
+
+</details>
 
 ## Protocol Materials
 - Robot: Opentrons Flex
