@@ -47,6 +47,9 @@ This protocol requires the following custom labware:
 
 [custom_labware/nunc_96_wellplate_optical_bottom_400ul.json](https://github.com/bingling-w/opentrons_protocols/blob/4070e261d453abb1e0a81ed08c07d66fa3a36a12/custom_labware/nunc_96_wellplate_optical_bottom_400ul.json)
 
+## Protocol Validations
+- $R^2$ value close to 1, signaling strong correlation between absorbance and concentration values. 
+
 ## Protocol Updates
 - Ver. 9: Code is made to blow out, touch tip, and blow out again to account for viscousity of unknowns and standards to prevent droplets. 
 - Ver. 8: Code is optimized to dispense and aspirate slower for more accurate 
