@@ -1,10 +1,21 @@
 # Pierce Dilution-Free Rapid Gold BCA Protein Assay Kit (OT-Flex)
 
 ## Overview
-The protocol performs automated Pierce Gold BCA assay kit from a 96 well plate using the Opentrons Flex robot with an 1000uL 8-channel and 50 uL 1-channel  pipette. The protocol is flexible, allowing inputs for different numbers of BSA unknowns and different numbers of replicates. 
+This protocol performs automated Pierce Gold BCA assay kit from a 96 well plate using the Opentrons Flex robot with an 1000uL 8-channel and 50 uL 1-channel  pipette. The protocol is flexible, allowing inputs for different numbers of BSA unknowns and different numbers of replicates. 
 
-The code can accept up to 24 unknowns for 1 to 2 replicates
-Or accept up to 18 unknowns of 3 replicates.
+The code can accept up to 24 unknowns for 1 to 2 replicates or accept up to 18 unknowns for 3 replicates.
+
+The Pierce Gold BCA Assay kit itself is for quantification of proteins in an unknown sample. The kit provides 8 standards with known protein concentrations. The unknowns and standards will be mixed with a working reagent (made by mixing reagent A and reagent B), left to incubate for 5 minutes at room temperature, and read in a spectrometry. 
+
+<img width="1160" height="218" alt="image" src="https://github.com/user-attachments/assets/3210d5fc-5c4c-431f-bfea-8e2b65adba7d" />
+
+This is the samples absorbance reading. The standard readings in row 1 will be turned into a linear regression graph. 
+
+<img width="370" height="270" alt="image" src="https://github.com/user-attachments/assets/ec320357-8061-4eb3-afae-40104f85c5c0" />
+
+The quadratic equation y = 0.246x + 0.0249 (y = absorbance) would be used to calculate the unknown protein concentrations in row 2 (x = concentration (mg/mL))
+
+For example, an absorbance of 1.426 means has a protein concentation of 5.696 mg/mL (x = ( y - 0.0249 ) / 0.246)
 
 ## Protocol Materials
 - Robot: Opentrons Flex
@@ -16,16 +27,20 @@ Or accept up to 18 unknowns of 3 replicates.
 - Others: Two opentrons 24 tuberack holder
 
 ## Protocol Summary
-- Before automation, place all labware accordance to the screen visualization set up
-- Example Set Up image: <img width="399" height="316" alt="image" src="https://github.com/user-attachments/assets/6ed72e8b-261a-4152-9853-1768faf6d961" />
-- Place unknowns and standards in preferred pattern, and dispense the necessary amount of reagent A and B into the reservoir and tube respectively.
-- Start automation protocol.
-- Dispenses 10 µL of BSA standards into column 1 (and column 2-3 if there's replicates)
-- Dispense 10 µL of BSA unknowns into the column next to the standards (replicates will be placed next to the first replicates row)
-- Mix reagent a and reagent b to create the working reagent
-- Dispense 200 µL with the 8-channel pipette into each row where there is standards and unknowns.
-- Heater-shaker will shake the well-plate at 825rpm for 20 seconds.
-- Protocol complete, protocol will set a timer for when to put the well plate to the spectrometry
+Before automation, place all labware accordance to the screen visualization set up
+
+Example Set Up image for 4 unknowns: <img width="399" height="316" alt="image" src="https://github.com/user-attachments/assets/6ed72e8b-261a-4152-9853-1768faf6d961" />
+
+Red = standards; yellow = unknowns; blue = reagent B; green = reagent A; purple = 50 uL tips;yellow = 200 uL tips. 
+1. Place unknowns and standards in preferred order in columns, and dispense the necessary amount of reagent A and B into the reservoir and tube respectively.
+2. Start automation protocol.
+3. Dispenses 10 µL of BSA standards into column 1 (and column 2-3 if there's replicates)
+4. Dispenses 10 µL of BSA unknowns into the column next to the standards (replicates will be placed next to the first replicates row)
+5. Combine reagent A and reagent B in a 50:1 ratio, then mix to create the working reagent.
+6. Dispense 200 µL of working reagent with the 8-channel pipette into each row where there is standards and unknowns.
+7. Heater-shaker will shake the well-plate at 825rpm for 25 seconds to mix well.
+8. Protocol will set a timer for 5 minutes.
+9. When timer is up, protocol will display completion so user can bring the wellplate to the spectrometry for absorbance reading. 
 
 ## Labware Required
 This protocol requires the following custom labware:
